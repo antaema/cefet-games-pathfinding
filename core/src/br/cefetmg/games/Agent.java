@@ -8,12 +8,15 @@ import br.cefetmg.games.movement.behavior.Algorithm;
 import br.cefetmg.games.movement.behavior.Seek;
 import br.cefetmg.games.pathfinding.TileConnection;
 import br.cefetmg.games.pathfinding.TileNode;
+import com.badlogic.gdx.ai.pfa.Connection;
 import com.badlogic.gdx.ai.pfa.DefaultGraphPath;
 import com.badlogic.gdx.ai.pfa.Heuristic;
 import com.badlogic.gdx.ai.pfa.indexed.IndexedAStarPathFinder;
 import com.badlogic.gdx.ai.pfa.indexed.IndexedAStarPathFinder.Metrics;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Array;
+import java.util.Arrays;
 import java.util.Iterator;
 
 /**
@@ -86,6 +89,21 @@ public class Agent {
         }
     }
 
+    public float getCost(TileNode n, TileNode n1) {
+        Array<Connection<TileNode>> connections = n.getConnections();
+        for (Connection<TileNode> t : connections) {
+            if (t instanceof TileConnection) {
+                t = (TileConnection) t;
+                if (t.getToNode().isObstacle() == false) {
+                    if (n == t.getFromNode() && n1 == t.getToNode()) {
+                        return t.getCost();
+                    }
+                }
+            }
+        }
+        return (0);
+    }
+
     /**
      * Este método é chamado quando um clique no mapa é realizado.
      *
@@ -103,22 +121,50 @@ public class Agent {
         path.clear();
         pathFinder.metrics.reset();
         // AQUI ESTAMOS CHAMANDO O ALGORITMO A* (instância pathFinder) 
-        pathFinder.searchConnectionPath(startNode, targetNode, 
-                new Heuristic<TileNode>() { 
- 
-            @Override 
-            public float estimate(TileNode n, TileNode n1) { 
+        pathFinder.searchConnectionPath(startNode, targetNode,
+                new Heuristic<TileNode>() {
+            @Override
+            public float estimate(TileNode n, TileNode n1) {
+                /*
                 throw new UnsupportedOperationException("Deveria ter retornado "
                         + "um valor para a heurística no arquivo "
                         + "Agent.java:107, mas o professor resolveu explodir "
                         + "o programa e deixar você consertar ;)"); 
-            } 
-        }, path); 
+                 */
+                float cost = getCost(n,n1);
+                //Dijkstra 
+                //  return n.getPosition().dst(n1.getPosition())/LevelManager.tileHeight;
+                /*
+                // Heuristica 1
+                if (cost > 1) {
+                    return n.getPosition().dst(n1.getPosition()) / LevelManager.tileHeight + (cost - 1);
+                } else {
+                    return n.getPosition().dst(n1.getPosition()) / LevelManager.tileHeight;
+                }
+                */
+                /*
+                // Heuristica 2
+                if (cost > 1) {
+                    return n.getPosition().dst(n1.getPosition()) * (cost/2) / LevelManager.tileHeight;
+                } else {
+                    return n.getPosition().dst(n1.getPosition()) / LevelManager.tileHeight;
+                }
+                */
+                // Heuristica 3
+                float porcentage = 0.5f;
+                if ( porcentage * cost > 1) {
+                    return n.getPosition().dst(n1.getPosition()) * porcentage * cost / LevelManager.tileHeight;
+                } else {
+                    return n.getPosition().dst(n1.getPosition()) / LevelManager.tileHeight;
+                }
+            }
+        }, path);
         pathIterator = path.iterator();
     }
 
     /**
      * Retorna em que direção (das 8) o agente está olhando.
+     *
      * @return a direção de orientação.
      */
     public Facing getFacing() {
@@ -127,7 +173,8 @@ public class Agent {
 
     /**
      * Retorna se o agente está se movimentando ou se está parado.
-     * @return 
+     *
+     * @return
      */
     public boolean isMoving() {
         return shouldMove;
@@ -135,7 +182,8 @@ public class Agent {
 
     /**
      * Retorna se o agente está em um tile de água.
-     * @return 
+     *
+     * @return
      */
     public boolean isUnderWater() {
         return currentNode == null ? false : currentNode.isWater();
@@ -144,6 +192,7 @@ public class Agent {
     /**
      * Retorna as métricas da última execução do algoritmo de planejamento de
      * trajetórias.
+     *
      * @return as métricas.
      */
     public Metrics getPathFindingMetrics() {
