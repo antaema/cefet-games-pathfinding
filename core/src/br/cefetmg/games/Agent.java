@@ -143,7 +143,7 @@ public class Agent {
                     return n.getPosition().dst(n1.getPosition()) / LevelManager.tileHeight;
                 }
                 */
-                // Heuristica 2
+                // Heuristica 2 (Manhattan)
                 float weighting = 1;
                 float crossweighting = (float) Math.sqrt(2);
                 float deltaX = Math.abs(n.getPosition().x-n1.getPosition().x);
