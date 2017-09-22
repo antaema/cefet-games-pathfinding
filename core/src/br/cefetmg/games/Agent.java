@@ -136,27 +136,19 @@ public class Agent {
                 //  return n.getPosition().dst(n1.getPosition())/LevelManager.tileHeight;
                 /*
                 // Heuristica 1
-                if (cost > 1) {
-                    return n.getPosition().dst(n1.getPosition()) / LevelManager.tileHeight + (cost - 1);
-                } else {
-                    return n.getPosition().dst(n1.getPosition()) / LevelManager.tileHeight;
-                }
-                */
-                /*
-                // Heuristica 2
-                if (cost > 1) {
-                    return n.getPosition().dst(n1.getPosition()) * (cost/2) / LevelManager.tileHeight;
-                } else {
-                    return n.getPosition().dst(n1.getPosition()) / LevelManager.tileHeight;
-                }
-                */
-                // Heuristica 3
                 float porcentage = 0.5f;
                 if ( porcentage * cost > 1) {
                     return n.getPosition().dst(n1.getPosition()) * porcentage * cost / LevelManager.tileHeight;
                 } else {
                     return n.getPosition().dst(n1.getPosition()) / LevelManager.tileHeight;
                 }
+                */
+                // Heuristica 2
+                float weighting = 1;
+                float crossweighting = (float) Math.sqrt(2);
+                float deltaX = Math.abs(n.getPosition().x-n1.getPosition().x);
+                float deltaY = Math.abs(n.getPosition().y-n1.getPosition().y);
+                return (weighting * (deltaX+deltaY) + (crossweighting - 2 * weighting) * Math.min(deltaX, deltaY)) / (LevelManager.tileWidth);
             }
         }, path);
         pathIterator = path.iterator();
